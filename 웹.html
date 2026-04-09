@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나의 종이 단어장</title>
+    <style>
+        /* 종이 질감 배경 및 기본 폰트 */
+        body {
+            background-color: #f4f1ea;
+            background-image: radial-gradient(#d1cfc8 1px, transparent 1px);
+            background-size: 20px 20px; /* 아주 연한 모눈종이 느낌 */
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+        }
+
+        header {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            letter-spacing: 5px;
+            color: #5d5d5d;
+            border-bottom: 2px solid #e74c3c;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+
+        /* 검색창 디자인 */
+        .search-container {
+            width: 100%;
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            margin-bottom: 30px;
+        }
+
+        #search-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 1rem;
+            outline: none;
+            background: white;
+        }
+
+        /* 단어 카드 리스트 */
+        #voca-container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* 개별 카드 (종이 질감) */
+        .card {
+            background: #fff;
+            padding: 25px;
+            aspect-ratio: 3 / 2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            box-shadow: 3px 3px 0px rgba(0,0,0,0.05);
+            border: 1px solid #efefef;
+            transition: all 0.2s ease;
+        }
+
+        /* 카드 왼쪽 빨간 선 (노트 포인트) */
+        .card::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: #ff7675;
+        }
+
+        .card:hover {
+            transform: rotate(-1deg) translateY(-5px);
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.05);
+        }
+
+        .kanji {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            padding-left: 10px;
+        }
+
+        .yomi {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 15px;
+            padding-left: 10px;
+        }
+
+        .meaning {
+            font-size: 1.1rem;
+            color: #444;
+            padding-left: 10px;
+            border-top: 1px dashed #ddd;
+            padding-top: 10px;
+        }
+
+        .loading {
+            font-style: italic;
+            color: #888;
+        }
+
+        @media (max-width: 600px) {
+            #voca-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>単語帳</h1>
+</header>
+
+<div class="search-container">
+    <input type="text" id="search-input" placeholder="검색어를 입력하면 바로 필터링됩니다..." disabled>
+</div>
+
+<div id="voca-container">
+    <p class="loading">단어장을 펼치는 중입니다...</p>
+</div>
+
+<script>
+    // 1. 본인의 구글 시트 CSV 주소를 여기에 넣으세요!
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6XdK394z-VSBOsBIq_nE20ZYWTgQciG_H5wL-e_9XaOaJzP9DwIeNJ4JAOX9X01h3zcFfSy8x4V3N/pub?output=csv";
+
+    let vocaData = [];
+
+    // 2. 데이터 가져오기 (실시간 연결)
+    async function init() {
+        const container = document.getElementById('voca-container');
+        const searchInput = document.getElementById('search-input');
+
+        try {
+            const response = await fetch(SHEET_URL);
+            const csvText = await response.text();
+            
+            // CSV 파싱 (줄바꿈으로 나누기)
+            const rows = csvText.split(/\r?\n/).slice(1); 
+            
+            vocaData = rows.map(row => {
+                // 콤마로 나누되, 큰따옴표 안의 콤마는 무시하는 정규식 (더 안전함)
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                return {
+                    kanji: cols[0]?.replace(/"/g, '').trim(),
+                    yomi: cols[1]?.replace(/"/g, '').trim(),
+                    meaning: cols[2]?.replace(/"/g, '').trim()
+                };
+            }).filter(item => item.kanji); // 빈 행 제거
+
+            // 로딩 완료 후 검색창 활성화 및 목록 출력
+            searchInput.disabled = false;
+            searchInput.placeholder = "한자, 발음, 뜻으로 검색하세요!";
+            displayVoca(vocaData);
+
+        } catch (error) {
+            container.innerHTML = `<p style="color:red">오류가 발생했습니다. 시트 주소를 확인해주세요!</p>`;
+            console.error(error);
+        }
+    }
+
+    // 3. 화면에 카드 그리기
+    function displayVoca(data) {
+        const container = document.getElementById('voca-container');
+        container.innerHTML = '';
+
+        if (data.length === 0) {
+            container.innerHTML = '<p class="loading">검색 결과가 없습니다. ㅠㅠ</p>';
+            return;
+        }
+
+        data.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="kanji">${item.kanji}</div>
+                <div class="yomi">${item.yomi}</div>
+                <div class="meaning">${item.meaning}</div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // 4. 검색 기능 (실시간 필터링)
+    document.getElementById('search-input').addEventListener('input', (e) => {
+        const keyword = e.target.value.toLowerCase();
+        
+        const filtered = vocaData.filter(item => 
+            (item.kanji && item.kanji.toLowerCase().includes(keyword)) || 
+            (item.yomi && item.yomi.toLowerCase().includes(keyword)) || 
+            (item.meaning && item.meaning.toLowerCase().includes(keyword))
+        );
+        
+        displayVoca(filtered);
+    });
+
+    // 실행!
+    init();
+</script>
+
+</body>
+</html>
