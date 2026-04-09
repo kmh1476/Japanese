@@ -4,100 +4,78 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>나의 종이 단어장</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-    body {
-        background-color: #f4f1ea;
-        background-image: radial-gradient(#d1cfc8 0.5px, transparent 0.5px);
-        background-size: 20px 20px;
-        /* 2. 폰트 우선순위를 일본어 서체(JP) 우선으로 설정합니다 */
-        font-family: 'Noto Sans JP', 'Noto Sans KR', sans-serif;
-        margin: 0;
-        padding: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        color: #333;
-        /* 3. 글자가 뭉쳐 보이지 않게 부드럽게 렌더링 설정 */
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
+        /* [디자인] 종이 질감 및 레이아웃 */
+        body {
+            background-color: #f4f1ea;
+            background-image: radial-gradient(#d1cfc8 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            font-family: 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
+            -webkit-font-smoothing: antialiased;
+        }
 
-    /* 한자 부분에 폰트 두께를 살짝 조절해서 가독성을 높입니다 */
-    .kanji { 
-        font-family: 'Noto Sans JP', sans-serif;
-        font-size: 1.3rem; 
-        font-weight: 500; /* 너무 굵으면 뭉치니 500~700 사이에서 조절 */
-        margin-bottom: 3px; 
-        padding-left: 10px; 
-        word-break: break-all;
-        color: #2c3e50; /* 색상을 아주 살짝 푸른기 도는 검정으로 바꾸면 더 선명해요 */
-    }
-        header { margin-bottom: 20px; text-align: center; }
+        header { margin-bottom: 15px; text-align: center; }
         h1 { font-size: 1.2rem; letter-spacing: 3px; color: #5d5d5d; border-bottom: 2px solid #e74c3c; display: inline-block; }
 
-        /* 검색창 크기 및 디자인 조절 */
+        /* [검색창] 상단 고정 및 크기 조절 */
         .search-container {
-            width: 100%;
-            max-width: 400px; /* 검색창 너무 길지 않게 제한 */
-            position: sticky;
-            top: 20px;
-            z-index: 100;
-            margin-bottom: 30px;
+            width: 100%; max-width: 400px; position: sticky; top: 20px; z-index: 100; margin-bottom: 20px;
         }
-
         #search-input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px; /* 종이 느낌에 맞춰 약간 각지게 */
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
-            font-size: 0.9rem;
-            outline: none;
-            box-sizing: border-box;
+            width: 100%; padding: 12px 20px; border: 1px solid #ccc; border-radius: 4px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.05); outline: none; box-sizing: border-box;
         }
 
-        /* 단어 카드 리스트 - 크기 축소 */
+        /* [필터 버튼] */
+        .filter-buttons { margin-bottom: 20px; display: flex; gap: 10px; }
+        .filter-btn {
+            padding: 6px 18px; border: 1px solid #ccc; background: white; cursor: pointer;
+            border-radius: 20px; font-size: 0.8rem; transition: 0.2s;
+        }
+        .filter-btn.active { background: #e74c3c; color: white; border-color: #e74c3c; }
+
+        /* [카드 그리드] 컴팩트한 사이즈 */
         #voca-container {
-            width: 100%;
-            max-width: 1000px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* 최소 너비 줄임 */
-            gap: 15px;
+            width: 100%; max-width: 1000px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;
         }
 
+        /* [카드 디자인] */
         .card {
-            background: #fff;
-            padding: 15px;
-            min-height: 100px; /* 세로 크기도 줄임 */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.05);
-            border: 1px solid #efefef;
-            transition: all 0.2s ease;
+            background: #fff; padding: 15px; position: relative; border: 1px solid #efefef;
+            box-shadow: 2px 2px 0px rgba(0,0,0,0.05); transition: all 0.2s ease; cursor: pointer;
+            min-height: 100px; display: flex; flex-direction: column; justify-content: center;
         }
-
         .card::before {
-            content: '';
-            position: absolute;
-            left: 10px;
-            top: 0;
-            bottom: 0;
-            width: 1px;
-            background: #ff7675;
-            opacity: 0.5;
+            content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 1px;
+            background: #ff7675; opacity: 0.4;
         }
+        .card.memorized { opacity: 0.4; background: #f9f9f9; }
 
-        .kanji { font-size: 1.3rem; font-weight: 700; margin-bottom: 3px; padding-left: 10px; word-break: break-all; }
-        .yomi { font-size: 0.8rem; color: #999; margin-bottom: 8px; padding-left: 10px; }
+        .kanji { font-size: 1.3rem; font-weight: 500; color: #2c3e50; padding-left: 10px; margin-bottom: 3px; }
+        .yomi { font-size: 0.8rem; color: #999; padding-left: 10px; margin-bottom: 8px; }
         .meaning { font-size: 0.95rem; color: #444; padding-left: 10px; border-top: 1px dashed #eee; padding-top: 8px; }
 
-        .loading { font-style: italic; color: #888; grid-column: 1 / -1; text-align: center; }
+        /* [예문 스타일] */
+        .example {
+            display: none; margin-top: 10px; padding: 10px; background: #fff9f9;
+            font-size: 0.85rem; color: #666; border-radius: 4px; border-left: 2px solid #ff7675; margin-left: 10px;
+        }
+        .card.show-ex .example { display: block; }
 
-        @media (max-width: 400px) {
-            #voca-container { grid-template-columns: 1fr 1fr; } /* 모바일에서도 2줄로 보이게 */
+        /* [체크 버튼] */
+        .check-btn {
+            position: absolute; top: 8px; right: 8px; border: none; background: none;
+            font-size: 1.1rem; cursor: pointer; color: #eee; transition: 0.2s; z-index: 10;
+        }
+        .card.memorized .check-btn { color: #e74c3c; }
+
+        .loading { grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 50px; }
+
+        @media (max-width: 450px) {
+            #voca-container { grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 5px; }
             .kanji { font-size: 1.1rem; }
         }
     </style>
@@ -107,7 +85,12 @@
 <header><h1>単語帳</h1></header>
 
 <div class="search-container">
-    <input type="text" id="search-input" placeholder="한자, 발음, 초성 검색..." disabled>
+    <input type="text" id="search-input" placeholder="한자, 뜻, 초성 검색..." disabled>
+</div>
+
+<div class="filter-buttons">
+    <button class="filter-btn active" id="btn-all">전체</button>
+    <button class="filter-btn" id="btn-todo">미암기</button>
 </div>
 
 <div id="voca-container">
@@ -115,10 +98,14 @@
 </div>
 
 <script>
-    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6XdK394z-VSBOsBIq_nE20ZYWTgQciG_H5wL-e_9XaOaJzP9DwIeNJ4JAOX9X01h3zcFfSy8x4V3N/pub?output=csv";
-    let vocaData = [];
+    // [설정] 본인의 URL로 교체하세요!
+    const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6XdK394z-VSBOsBIq_nE20ZYWTgQciG_H5wL-e_9XaOaJzP9DwIeNJ4JAOX9X01h3zcFfSy8x4V3N/pub?output=csv"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbyUexwgVnZxUJYiFUyQ6PxkeU4rtAzUylg1GpIGXs-ycRoM8aG8Xr22XqLEjxZbnwIpTQ/exec"; 
 
-    // --- 초성 검색 로직 ---
+    let vocaData = [];
+    let currentFilter = 'all';
+
+    // 한국어 초성 추출 로직
     function getChosung(str) {
         const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
         let result = "";
@@ -130,6 +117,7 @@
         return result;
     }
 
+    // 데이터 초기화
     async function init() {
         const container = document.getElementById('voca-container');
         const searchInput = document.getElementById('search-input');
@@ -139,59 +127,92 @@
             const csvText = await response.text();
             const rows = csvText.split(/\r?\n/).slice(1); 
             
-            vocaData = rows.map(row => {
+            vocaData = rows.map((row, index) => {
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                const item = {
+                return {
+                    id: index,
                     kanji: cols[0]?.replace(/"/g, '').trim() || '',
                     yomi: cols[1]?.replace(/"/g, '').trim() || '',
-                    meaning: cols[2]?.replace(/"/g, '').trim() || ''
+                    meaning: cols[2]?.replace(/"/g, '').trim() || '',
+                    example: cols[3]?.replace(/"/g, '').trim() || '',
+                    status: cols[4]?.replace(/"/g, '').trim() || '',
+                    chosung: getChosung(cols[2] || '')
                 };
-                // 검색 효율을 위해 초성 미리 계산
-                item.chosung = getChosung(item.meaning); 
-                return item;
             }).filter(item => item.kanji);
 
             searchInput.disabled = false;
-            displayVoca(vocaData);
+            render();
         } catch (error) {
-            container.innerHTML = `<p style="color:red">연결 실패!</p>`;
+            container.innerHTML = `<p style="color:red">데이터 로드 실패! 시트 설정을 확인해주세요.</p>`;
         }
     }
 
-    function displayVoca(data) {
+    // 암기 상태 토글 (기기간 공유)
+    async function toggleMemorized(id, event) {
+        event.stopPropagation();
+        const card = event.currentTarget.closest('.card');
+        const isSelected = card.classList.toggle('memorized');
+        
+        // 데이터 객체 업데이트
+        const item = vocaData.find(v => v.id === id);
+        item.status = isSelected ? "O" : "";
+
+        try {
+            await fetch(`${API_URL}?action=toggle&row=${id}`, { mode: 'no-cors' });
+        } catch (e) {
+            console.error("저장 실패", e);
+            card.classList.toggle('memorized');
+        }
+    }
+
+    // 화면 그리기
+    function render() {
         const container = document.getElementById('voca-container');
+        const keyword = document.getElementById('search-input').value.toLowerCase();
         container.innerHTML = '';
-        data.forEach(item => {
+
+        const filtered = vocaData.filter(item => {
+            const isMatch = item.kanji.toLowerCase().includes(keyword) || 
+                            item.meaning.toLowerCase().includes(keyword) || 
+                            item.yomi.toLowerCase().includes(keyword) ||
+                            item.chosung.includes(keyword);
+            
+            if (currentFilter === 'todo') return isMatch && item.status !== "O";
+            return isMatch;
+        });
+
+        filtered.forEach(item => {
             const card = document.createElement('div');
-            card.className = 'card';
+            card.className = `card ${item.status === "O" ? 'memorized' : ''}`;
+            card.onclick = () => card.classList.toggle('show-ex');
+            
             card.innerHTML = `
+                <button class="check-btn" onclick="toggleMemorized(${item.id}, event)">✔</button>
                 <div class="kanji">${item.kanji}</div>
                 <div class="yomi">${item.yomi}</div>
                 <div class="meaning">${item.meaning}</div>
+                ${item.example ? `<div class="example">${item.example}</div>` : ''}
             `;
             container.appendChild(card);
         });
     }
 
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        const keyword = e.target.value.toLowerCase().replace(/\s/g, "");
-        
-        const filtered = vocaData.filter(item => {
-            const targetKanji = item.kanji.toLowerCase();
-            const targetYomi = item.yomi.toLowerCase();
-            const targetMeaning = item.meaning.toLowerCase();
-            const targetChosung = item.chosung;
-
-            return targetKanji.includes(keyword) || 
-                   targetYomi.includes(keyword) || 
-                   targetMeaning.includes(keyword) || 
-                   targetChosung.includes(keyword);
-        });
-        displayVoca(filtered);
-    });
+    // 이벤트 바인딩
+    document.getElementById('search-input').oninput = () => render();
+    document.getElementById('btn-all').onclick = (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentFilter = 'all';
+        render();
+    };
+    document.getElementById('btn-todo').onclick = (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        currentFilter = 'todo';
+        render();
+    };
 
     init();
 </script>
-
 </body>
 </html>
