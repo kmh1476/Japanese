@@ -4,20 +4,35 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>나의 종이 단어장</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #f4f1ea;
-            background-image: radial-gradient(#d1cfc8 0.5px, transparent 0.5px);
-            background-size: 20px 20px;
-            font-family: 'Noto Sans KR', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #333;
-        }
+    body {
+        background-color: #f4f1ea;
+        background-image: radial-gradient(#d1cfc8 0.5px, transparent 0.5px);
+        background-size: 20px 20px;
+        /* 2. 폰트 우선순위를 일본어 서체(JP) 우선으로 설정합니다 */
+        font-family: 'Noto Sans JP', 'Noto Sans KR', sans-serif;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #333;
+        /* 3. 글자가 뭉쳐 보이지 않게 부드럽게 렌더링 설정 */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 
+    /* 한자 부분에 폰트 두께를 살짝 조절해서 가독성을 높입니다 */
+    .kanji { 
+        font-family: 'Noto Sans JP', sans-serif;
+        font-size: 1.3rem; 
+        font-weight: 500; /* 너무 굵으면 뭉치니 500~700 사이에서 조절 */
+        margin-bottom: 3px; 
+        padding-left: 10px; 
+        word-break: break-all;
+        color: #2c3e50; /* 색상을 아주 살짝 푸른기 도는 검정으로 바꾸면 더 선명해요 */
+    }
         header { margin-bottom: 20px; text-align: center; }
         h1 { font-size: 1.2rem; letter-spacing: 3px; color: #5d5d5d; border-bottom: 2px solid #e74c3c; display: inline-block; }
 
