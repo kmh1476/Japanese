@@ -6,37 +6,72 @@
     <title>나의 종이 단어장</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* [디자인] 종이 질감 및 레이아웃 */
+        /* [1. CSS 변수 및 테마 설정] */
+        :root {
+            --bg-color: #f4f1ea;
+            --dot-color: #d1cfc8;
+            --paper-line: #efede5;
+            --text-main: #2c3e50;
+            --text-sub: #999;
+            --card-bg: #ffffff;
+            --accent: #e74c3c;
+            --card-shadow: rgba(0,0,0,0.05);
+            --line-opacity: 0.4;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1e1e1e;
+            --dot-color: #333;
+            --paper-line: #2d2d2d;
+            --text-main: #e0e0e0;
+            --text-sub: #777;
+            --card-bg: #2d2d2d;
+            --accent: #ff7675;
+            --card-shadow: rgba(0,0,0,0.2);
+            --line-opacity: 0.2;
+        }
+
+        /* [2. 디자인 및 종이 질감 강화] */
         body {
-            background-color: #f4f1ea;
-            background-image: radial-gradient(#d1cfc8 0.5px, transparent 0.5px);
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(var(--dot-color) 0.5px, transparent 0.5px),
+                linear-gradient(var(--paper-line) 1px, transparent 1px);
             background-size: 20px 20px;
             font-family: 'Noto Sans JP', 'Noto Sans KR', sans-serif;
             margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
-            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.3s ease;
+            color: var(--text-main);
         }
 
-        header { margin-bottom: 15px; text-align: center; }
-        h1 { font-size: 1.2rem; letter-spacing: 3px; color: #5d5d5d; border-bottom: 2px solid #e74c3c; display: inline-block; }
+        header { margin-bottom: 15px; text-align: center; position: relative; width: 100%; max-width: 400px; }
+        h1 { font-size: 1.2rem; letter-spacing: 3px; color: var(--text-main); border-bottom: 2px solid var(--accent); display: inline-block; }
 
-        /* [검색창] 상단 고정 및 크기 조절 */
-        .search-container {
-            width: 100%; max-width: 400px; position: sticky; top: 20px; z-index: 100; margin-bottom: 20px;
+        /* [상단 컨트롤 바] */
+        .top-controls {
+            display: flex; gap: 10px; position: absolute; right: 0; top: 0;
         }
+        .icon-btn {
+            background: none; border: 1px solid var(--dot-color); border-radius: 5px; 
+            cursor: pointer; padding: 5px; font-size: 1rem; color: var(--text-main);
+        }
+
+        /* [검색 및 필터] */
+        .search-container { width: 100%; max-width: 400px; position: sticky; top: 20px; z-index: 100; margin-bottom: 20px; }
         #search-input {
-            width: 100%; padding: 12px 20px; border: 1px solid #ccc; border-radius: 4px;
-            box-shadow: 2px 2px 5px rgba(0,0,0,0.05); outline: none; box-sizing: border-box;
+            width: 100%; padding: 12px 20px; border: 1px solid var(--dot-color); border-radius: 8px;
+            background: var(--card-bg); color: var(--text-main); outline: none; box-sizing: border-box;
+            box-shadow: 0 4px 6px var(--card-shadow);
         }
 
-        /* [필터 버튼] */
         .filter-buttons { margin-bottom: 20px; display: flex; gap: 10px; }
         .filter-btn {
-            padding: 6px 18px; border: 1px solid #ccc; background: white; cursor: pointer;
-            border-radius: 20px; font-size: 0.8rem; transition: 0.2s;
+            padding: 6px 18px; border: 1px solid var(--dot-color); background: var(--card-bg); cursor: pointer;
+            border-radius: 20px; font-size: 0.8rem; transition: 0.2s; color: var(--text-main);
         }
-        .filter-btn.active { background: #e74c3c; color: white; border-color: #e74c3c; }
+        .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        /* [카드 그리드] 컴팩트한 사이즈 */
+        /* [카드 그리드] */
         #voca-container {
             width: 100%; max-width: 1000px;
             display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;
@@ -44,36 +79,54 @@
 
         /* [카드 디자인] */
         .card {
-            background: #fff; padding: 15px; position: relative; border: 1px solid #efefef;
-            box-shadow: 2px 2px 0px rgba(0,0,0,0.05); transition: all 0.2s ease; cursor: pointer;
+            background: var(--card-bg); padding: 15px; position: relative; border: 1px solid var(--paper-line);
+            box-shadow: 4px 4px 0px var(--card-shadow); transition: transform 0.2s ease, opacity 0.2s; cursor: pointer;
             min-height: 100px; display: flex; flex-direction: column; justify-content: center;
         }
+        .card:hover { transform: translateY(-3px); }
         .card::before {
             content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 1px;
-            background: #ff7675; opacity: 0.4;
+            background: var(--accent); opacity: var(--line-opacity);
         }
-        .card.memorized { opacity: 0.4; background: #f9f9f9; }
+        .card.memorized { opacity: 0.4; }
 
-        .kanji { font-size: 1.3rem; font-weight: 500; color: #2c3e50; padding-left: 10px; margin-bottom: 3px; }
-        .yomi { font-size: 0.8rem; color: #999; padding-left: 10px; margin-bottom: 8px; }
-        .meaning { font-size: 0.95rem; color: #444; padding-left: 10px; border-top: 1px dashed #eee; padding-top: 8px; }
+        .kanji { font-size: 1.3rem; font-weight: 500; color: var(--text-main); padding-left: 10px; margin-bottom: 3px; }
+        
+        /* [5. 후리가나 가리기 기능 관련 CSS] */
+        .yomi { 
+            font-size: 0.8rem; color: var(--text-sub); padding-left: 10px; margin-bottom: 8px; 
+            transition: opacity 0.2s;
+        }
+        body.hide-yomi .yomi { opacity: 0; }
 
-        /* [예문 스타일] */
+        .meaning { font-size: 0.95rem; color: var(--text-main); padding-left: 10px; border-top: 1px dashed var(--paper-line); padding-top: 8px; }
+
         .example {
-            display: none; margin-top: 10px; padding: 10px; background: #fff9f9;
-            font-size: 0.85rem; color: #666; border-radius: 4px; border-left: 2px solid #ff7675; margin-left: 10px;white-space: pre-wrap; 
-    word-break: break-all;
+            display: none; margin-top: 10px; padding: 10px; background: var(--bg-color);
+            font-size: 0.85rem; color: var(--text-sub); border-radius: 4px; border-left: 2px solid var(--accent); margin-left: 10px;
+            white-space: pre-wrap; word-break: break-all;
         }
         .card.show-ex .example { display: block; }
 
-        /* [체크 버튼] */
         .check-btn {
             position: absolute; top: 8px; right: 8px; border: none; background: none;
-            font-size: 1.1rem; cursor: pointer; color: #eee; transition: 0.2s; z-index: 10;
+            font-size: 1.1rem; cursor: pointer; color: var(--dot-color); transition: 0.2s; z-index: 10;
         }
-        .card.memorized .check-btn { color: #e74c3c; }
+        .card.memorized .check-btn { color: var(--accent); }
 
-        .loading { grid-column: 1 / -1; text-align: center; color: #888; font-style: italic; padding: 50px; }
+        /* [4. 로딩 상태 개선 스타일] */
+        #loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid var(--dot-color);
+            border-top: 4px solid var(--accent); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         @media (max-width: 450px) {
             #voca-container { grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 5px; }
@@ -83,7 +136,18 @@
 </head>
 <body>
 
-<header><h1>単語帳</h1></header>
+<div id="loading-overlay">
+    <div class="spinner"></div>
+    <p>단어장을 펼치는 중...</p>
+</div>
+
+<header>
+    <h1>単語帳</h1>
+    <div class="top-controls">
+        <button class="icon-btn" id="btn-yomi" title="가나 숨기기/보이기">👁️</button>
+        <button class="icon-btn" id="btn-theme" title="다크모드 전환">🌙</button>
+    </div>
+</header>
 
 <div class="search-container">
     <input type="text" id="search-input" placeholder="한자, 뜻, 초성 검색..." disabled>
@@ -94,19 +158,15 @@
     <button class="filter-btn" id="btn-todo">미암기</button>
 </div>
 
-<div id="voca-container">
-    <p class="loading">단어장을 펼치는 중...</p>
-</div>
+<div id="voca-container"></div>
 
 <script>
-    // [설정] 본인의 URL로 교체하세요!
     const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6XdK394z-VSBOsBIq_nE20ZYWTgQciG_H5wL-e_9XaOaJzP9DwIeNJ4JAOX9X01h3zcFfSy8x4V3N/pub?output=csv"; 
     const API_URL = "https://script.google.com/macros/s/AKfycbwPs9iuwSeAfH80L7nfTQ7WkeI76ceMQVzwinaKxFY4mFO1J_dESEIKHOVHRu8ULgqHQA/exec"; 
 
     let vocaData = [];
     let currentFilter = 'all';
 
-    // 한국어 초성 추출 로직
     function getChosung(str) {
         const cho = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
         let result = "";
@@ -118,71 +178,63 @@
         return result;
     }
 
-    // 데이터 초기화
-async function init() {
-    const container = document.getElementById('voca-container');
-    const searchInput = document.getElementById('search-input');
+    async function init() {
+        const container = document.getElementById('voca-container');
+        const searchInput = document.getElementById('search-input');
+        const loader = document.getElementById('loading-overlay');
 
-    try {
-        const response = await fetch(SHEET_URL);
-        const csvText = await response.text();
-        
-        // [수정된 로직] 줄바꿈과 따옴표를 완벽하게 처리하는 파서
-        const parseCSV = (text) => {
-            const result = [];
-            let row = [];
-            let col = "";
-            let inQuotes = false;
-
-            for (let i = 0; i < text.length; i++) {
-                let char = text[i];
-                let nextChar = text[i+1];
-
-                if (char === '"' && inQuotes && nextChar === '"') { col += '"'; i++; }
-                else if (char === '"') { inQuotes = !inQuotes; }
-                else if (char === ',' && !inQuotes) { row.push(col); col = ""; }
-                else if (char === '\n' && !inQuotes) { 
-                    row.push(col); result.push(row); row = []; col = ""; 
+        try {
+            const response = await fetch(SHEET_URL);
+            const csvText = await response.text();
+            
+            const parseCSV = (text) => {
+                const result = [];
+                let row = [];
+                let col = "";
+                let inQuotes = false;
+                for (let i = 0; i < text.length; i++) {
+                    let char = text[i];
+                    let nextChar = text[i+1];
+                    if (char === '"' && inQuotes && nextChar === '"') { col += '"'; i++; }
+                    else if (char === '"') { inQuotes = !inQuotes; }
+                    else if (char === ',' && !inQuotes) { row.push(col); col = ""; }
+                    else if (char === '\n' && !inQuotes) { row.push(col); result.push(row); row = []; col = ""; }
+                    else { col += char; }
                 }
-                else { col += char; }
-            }
-            row.push(col);
-            result.push(row);
-            return result;
-        };
+                row.push(col); result.push(row);
+                return result;
+            };
 
-        const allRows = parseCSV(csvText).slice(1); // 첫 줄(헤더) 제외
-
-        vocaData = allRows.map((cols, index) => {
-            return {
+            const allRows = parseCSV(csvText).slice(1);
+            vocaData = allRows.map((cols, index) => ({
                 id: index,
                 kanji: cols[0]?.trim() || '',
                 yomi: cols[1]?.trim() || '',
                 meaning: cols[2]?.trim() || '',
-                example: cols[3]?.trim() || '', // 여기에 줄바꿈이 포함되어 있어도 OK!
+                example: cols[3]?.trim() || '',
                 status: cols[4]?.trim() || '',
                 chosung: getChosung(cols[2] || '')
-            };
-        }).filter(item => item.kanji);
+            })).filter(item => item.kanji);
 
-        searchInput.disabled = false;
-        render();
-    } catch (error) {
-        console.error(error);
-        container.innerHTML = `<p style="color:red">로드 실패!</p>`;
+            searchInput.disabled = false;
+            render();
+            
+            // 로딩 화면 부드럽게 제거
+            loader.style.opacity = '0';
+            setTimeout(() => loader.style.display = 'none', 500);
+
+        } catch (error) {
+            console.error(error);
+            container.innerHTML = `<p style="color:red">로드 실패!</p>`;
+        }
     }
-}
 
-    // 암기 상태 토글 (기기간 공유)
     async function toggleMemorized(id, event) {
         event.stopPropagation();
         const card = event.currentTarget.closest('.card');
         const isSelected = card.classList.toggle('memorized');
-        
-        // 데이터 객체 업데이트
         const item = vocaData.find(v => v.id === id);
         item.status = isSelected ? "O" : "";
-
         try {
             await fetch(`${API_URL}?action=toggle&row=${id}`, { mode: 'no-cors' });
         } catch (e) {
@@ -191,7 +243,6 @@ async function init() {
         }
     }
 
-    // 화면 그리기
     function render() {
         const container = document.getElementById('voca-container');
         const keyword = document.getElementById('search-input').value.toLowerCase();
@@ -202,7 +253,6 @@ async function init() {
                             item.meaning.toLowerCase().includes(keyword) || 
                             item.yomi.toLowerCase().includes(keyword) ||
                             item.chosung.includes(keyword);
-            
             if (currentFilter === 'todo') return isMatch && item.status !== "O";
             return isMatch;
         });
@@ -211,7 +261,6 @@ async function init() {
             const card = document.createElement('div');
             card.className = `card ${item.status === "O" ? 'memorized' : ''}`;
             card.onclick = () => card.classList.toggle('show-ex');
-            
             card.innerHTML = `
                 <button class="check-btn" onclick="toggleMemorized(${item.id}, event)">✔</button>
                 <div class="kanji">${item.kanji}</div>
@@ -223,7 +272,21 @@ async function init() {
         });
     }
 
-    // 이벤트 바인딩
+    // [기능: 다크모드 토글]
+    document.getElementById('btn-theme').onclick = () => {
+        const body = document.documentElement;
+        const isDark = body.getAttribute('data-theme') === 'dark';
+        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        document.getElementById('btn-theme').innerText = isDark ? '🌙' : '☀️';
+    };
+
+    // [기능: 가나 숨기기 토글]
+    document.getElementById('btn-yomi').onclick = () => {
+        document.body.classList.toggle('hide-yomi');
+        const isHidden = document.body.classList.contains('hide-yomi');
+        document.getElementById('btn-yomi').innerText = isHidden ? '🙈' : '👁️';
+    };
+
     document.getElementById('search-input').oninput = () => render();
     document.getElementById('btn-all').onclick = (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
