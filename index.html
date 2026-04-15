@@ -206,15 +206,23 @@
             };
 
             const allRows = parseCSV(csvText).slice(1);
-            vocaData = allRows.map((cols, index) => ({
-                id: index,
-                kanji: cols[0]?.trim() || '',
-                yomi: cols[1]?.trim() || '',
-                meaning: cols[2]?.trim() || '',
-                example: cols[3]?.trim() || '',
-                status: cols[4]?.trim() || '',
-                chosung: getChosung(cols[2] || '')
-            })).filter(item => item.kanji);
+           vocaData = allRows.map((cols, index) => {
+    const rawKanji = cols[0]?.trim() || '';
+    const rawYomi = cols[1]?.trim() || '';
+    
+    // [핵심] A열(한자)이 비어있으면 B열(발음)을 대신 한자 칸에 넣습니다.
+    const displayKanji = rawKanji !== "" ? rawKanji : rawYomi;
+
+    return {
+        id: index,
+        kanji: displayKanji,
+        yomi: rawYomi,
+        meaning: cols[2]?.trim() || '',
+        example: cols[3]?.trim() || '',
+        status: cols[4]?.trim() || '',
+        chosung: getChosung(cols[2] || '')
+    };
+}).filter(item => item.kanji); // 이제 B열이라도 값이 있으면 filter에서 걸러지지 않습니다.
 
             searchInput.disabled = false;
             render();
