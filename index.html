@@ -96,17 +96,17 @@
 }
 
 /* 품사별 개별 색상 - 명확하게 구분함 */
-.tag-badge.명사 { background-color: #3498db !important; }        /* 파랑 */
-.tag-badge.い형용사 { background-color: #e74c3c !important; }   /* 빨강 */
-.tag-badge.나형용사 { background-color: #2ecc71 !important; }   /* 초록 */
-
-/* 동사 시리즈: 색상 스펙트럼 분리 */
-.tag-badge.1동사 { background-color: #f1c40f !important; color: #000 !important; } /* 노랑 (검정글씨로 가독성 확보) */
-.tag-badge.2동사 { background-color: #e67e22 !important; }      /* 주황 */
-.tag-badge.3동사 { background-color: #9b59b6 !important; }      /* 보라 */
-
-.tag-badge.기타 { background-color: #7f8c8d !important; }       /* 진회색 */
-.tag-badge.미분류 { background-color: #bdc3c7 !important; }    /* 연회색 */
+.tag-badge.명사 { background-color: #3498db !important; }
+    .tag-badge.い형용사 { background-color: #e74c3c !important; }
+    .tag-badge.な형용사 { background-color: #2ecc71 !important; }
+    
+    /* 동사별 색상 확실히 구분 */
+    .tag-badge.동사1 { background-color: #f1c40f !important; color: #222 !important; } /* 노랑 */
+    .tag-badge.동사2 { background-color: #e67e22 !important; } /* 주황 */
+    .tag-badge.동사3 { background-color: #9b59b6 !important; } /* 보라 */
+    
+    .tag-badge.기타 { background-color: #7f8c8d !important; }
+    .tag-badge.미분류 { background-color: #bdc3c7 !important; }
 
         .kanji { font-size: 1.3rem; font-weight: 500; color: var(--text-main); padding-left: 10px; margin-top: 15px; margin-bottom: 3px; }
         .yomi { font-size: 0.8rem; color: var(--text-sub); padding-left: 10px; margin-bottom: 8px; }
@@ -173,7 +173,7 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbwPs9iuwSeAfH80L7nfTQ7WkeI76ceMQVzwinaKxFY4mFO1J_dESEIKHOVHRu8ULgqHQA/exec"; 
 
     // 선생님이 정하신 품사 정렬 순서
-    const SORT_ORDER = ["명사", "い형용사", "な형용사", "1동사", "2동사", "3동사", "기타"];
+    const SORT_ORDER = ["명사", "い형용사", "な형용사", "동사1", "동사2", "동사3", "기타"];
 
     let vocaData = [];
     let currentFilter = 'all';
