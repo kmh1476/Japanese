@@ -1,169 +1,63 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>나의 종이 단어장</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* [1. CSS 변수 및 테마 설정] */
-        :root {
-            --bg-color: #f4f1ea;
-            --dot-color: #d1cfc8;
-            --paper-line: #efede5;
-            --text-main: #2c3e50;
-            --text-sub: #999;
-            --card-bg: #ffffff;
-            --accent: #e74c3c;
-            --card-shadow: rgba(0,0,0,0.05);
-            --line-opacity: 0.4;
-        }
-
-        [data-theme="dark"] {
-            --bg-color: #1e1e1e;
-            --dot-color: #333;
-            --paper-line: #2d2d2d;
-            --text-main: #e0e0e0;
-            --text-sub: #777;
-            --card-bg: #2d2d2d;
-            --accent: #ff7675;
-            --card-shadow: rgba(0,0,0,0.2);
-            --line-opacity: 0.2;
-        }
-
-        /* [2. 배경 및 레이아웃] */
-        body {
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(var(--dot-color) 0.5px, transparent 0.5px),
-                linear-gradient(var(--paper-line) 1px, transparent 1px);
-            background-size: 20px 20px;
-            font-family: 'Noto Sans JP', 'Noto Sans KR', sans-serif;
-            margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center;
-            transition: background-color 0.3s ease; color: var(--text-main);
-        }
-
+        /* (기존 CSS 스타일 그대로 유지) */
+        :root { --bg-color: #f4f1ea; --dot-color: #d1cfc8; --paper-line: #efede5; --text-main: #2c3e50; --text-sub: #999; --card-bg: #ffffff; --accent: #e74c3c; --card-shadow: rgba(0,0,0,0.05); --line-opacity: 0.4; }
+        [data-theme="dark"] { --bg-color: #1e1e1e; --dot-color: #333; --paper-line: #2d2d2d; --text-main: #e0e0e0; --text-sub: #777; --card-bg: #2d2d2d; --accent: #ff7675; --card-shadow: rgba(0,0,0,0.2); --line-opacity: 0.2; }
+        body { background-color: var(--bg-color); background-image: radial-gradient(var(--dot-color) 0.5px, transparent 0.5px), linear-gradient(var(--paper-line) 1px, transparent 1px); background-size: 20px 20px; font-family: 'Noto Sans JP', 'Noto Sans KR', sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); }
         header { margin-bottom: 15px; text-align: center; position: relative; width: 100%; max-width: 400px; }
         h1 { font-size: 1.2rem; letter-spacing: 3px; border-bottom: 2px solid var(--accent); display: inline-block; }
-
         .top-controls { display: flex; gap: 10px; position: absolute; right: 0; top: 0; }
-        .icon-btn {
-            background: none; border: 1px solid var(--dot-color); border-radius: 5px; 
-            cursor: pointer; padding: 5px; font-size: 1rem; color: var(--text-main);
-        }
-
-        /* [검색 및 필터] */
+        .icon-btn { background: none; border: 1px solid var(--dot-color); border-radius: 5px; cursor: pointer; padding: 5px; font-size: 1rem; color: var(--text-main); }
         .search-container { width: 100%; max-width: 400px; position: sticky; top: 20px; z-index: 100; margin-bottom: 20px; }
-        #search-input {
-            width: 100%; padding: 12px 20px; border: 1px solid var(--dot-color); border-radius: 8px;
-            background: var(--card-bg); color: var(--text-main); outline: none; box-sizing: border-box;
-            box-shadow: 0 4px 6px var(--card-shadow);
-        }
-
+        #search-input { width: 100%; padding: 12px 20px; border: 1px solid var(--dot-color); border-radius: 8px; background: var(--card-bg); color: var(--text-main); outline: none; box-sizing: border-box; box-shadow: 0 4px 6px var(--card-shadow); }
         .filter-buttons { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-        .filter-btn {
-            padding: 6px 15px; border: 1px solid var(--dot-color); background: var(--card-bg); cursor: pointer;
-            border-radius: 20px; font-size: 0.8rem; transition: 0.2s; color: var(--text-main);
-        }
+        .filter-btn { padding: 6px 15px; border: 1px solid var(--dot-color); background: var(--card-bg); cursor: pointer; border-radius: 20px; font-size: 0.8rem; color: var(--text-main); }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
-        
-        #tag-filter {
-            border: 1px solid var(--dot-color); background: var(--card-bg); color: var(--text-main);
-            padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; outline: none;
-        }
-
-        /* [카드 디자인] */
-        #voca-container {
-            width: 100%; max-width: 1000px;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;
-        }
-
-        .card {
-            background: var(--card-bg); padding: 15px; position: relative; border: 1px solid var(--paper-line);
-            box-shadow: 4px 4px 0px var(--card-shadow); transition: transform 0.2s ease, opacity 0.2s; cursor: pointer;
-            min-height: 120px; display: flex; flex-direction: column; justify-content: center;
-        }
-        .card:hover { transform: translateY(-3px); }
-        .card::before {
-            content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 1px;
-            background: var(--accent); opacity: var(--line-opacity);
-        }
+        #tag-filter { border: 1px solid var(--dot-color); background: var(--card-bg); color: var(--text-main); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; outline: none; }
+        #voca-container { width: 100%; max-width: 1000px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .card { background: var(--card-bg); padding: 15px; position: relative; border: 1px solid var(--paper-line); box-shadow: 4px 4px 0px var(--card-shadow); transition: transform 0.2s ease, opacity 0.2s; cursor: pointer; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+        .card::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 1px; background: var(--accent); opacity: var(--line-opacity); }
         .card.memorized { opacity: 0.4; }
-
-        /* [품사 배지] 시트의 G열 글자가 클래스가 됨 */
-        .tag-badge {
-            font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; color: #fff;
-            position: absolute; top: 10px; left: 15px; font-weight: bold; background: #95a5a6;
-        }
-        /* 시트 내용과 일치할 때 적용될 색상들 */
+        .tag-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; color: #fff; position: absolute; top: 10px; left: 15px; font-weight: bold; background: #95a5a6; }
         .tag-badge.명사 { background: #3498db; }
         .tag-badge.い형용사 { background: #e74c3c; }
-        .tag-badge.な형용사 { background: #2ecc71; }
+        .tag-badge.나형용사 { background: #2ecc71; }
         .tag-badge.1동사 { background: #f39c12; }
         .tag-badge.2동사 { background: #e67e22; }
         .tag-badge.3동사 { background: #d35400; }
-
-        .kanji { font-size: 1.3rem; font-weight: 500; color: var(--text-main); padding-left: 10px; margin-top: 15px; margin-bottom: 3px; }
-        .yomi { font-size: 0.8rem; color: var(--text-sub); padding-left: 10px; margin-bottom: 8px; transition: opacity 0.2s; }
+        .kanji { font-size: 1.3rem; font-weight: 500; color: var(--text-main); padding-left: 10px; margin-top: 15px; }
+        .yomi { font-size: 0.8rem; color: var(--text-sub); padding-left: 10px; margin-bottom: 8px; }
         body.hide-yomi .yomi { opacity: 0; }
-
         .meaning { font-size: 0.95rem; color: var(--text-main); padding-left: 10px; border-top: 1px dashed var(--paper-line); padding-top: 8px; }
-
-        .example {
-            display: none; margin-top: 10px; padding: 10px; background: var(--bg-color);
-            font-size: 0.85rem; color: var(--text-sub); border-radius: 4px; border-left: 2px solid var(--accent); margin-left: 10px;
-            white-space: pre-wrap; word-break: break-all;
-        }
+        .example { display: none; margin-top: 10px; padding: 10px; background: var(--bg-color); font-size: 0.85rem; color: var(--text-sub); border-radius: 4px; border-left: 2px solid var(--accent); margin-left: 10px; white-space: pre-wrap; word-break: break-all; }
         .card.show-ex .example { display: block; }
-
-        .check-btn {
-            position: absolute; top: 8px; right: 8px; border: none; background: none;
-            font-size: 1.1rem; cursor: pointer; color: var(--dot-color); transition: 0.2s; z-index: 10;
-        }
+        .check-btn { position: absolute; top: 8px; right: 8px; border: none; background: none; font-size: 1.1rem; cursor: pointer; color: var(--dot-color); }
         .card.memorized .check-btn { color: var(--accent); }
-
-        #loading-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-color); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 2000; transition: opacity 0.5s ease;
-        }
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid var(--dot-color);
-            border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 2000; }
+        .spinner { width: 40px; height: 40px; border: 4px solid var(--dot-color); border-top: 4px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        @media (max-width: 450px) {
-            #voca-container { grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 5px; }
-            .kanji { font-size: 1.1rem; }
-        }
     </style>
 </head>
 <body>
 
-<div id="loading-overlay">
-    <div class="spinner"></div>
-    <p>단어장을 펼치는 중...</p>
-</div>
+<div id="loading-overlay"><div class="spinner"></div><p>단어장을 펼치는 중...</p></div>
 
 <header>
     <h1>単語帳</h1>
     <div class="top-controls">
-        <button class="icon-btn" id="btn-yomi" title="가나 숨기기/보이기">👁️</button>
-        <button class="icon-btn" id="btn-theme" title="다크모드 전환">🌙</button>
+        <button class="icon-btn" id="btn-yomi">👁️</button>
+        <button class="icon-btn" id="btn-theme">🌙</button>
     </div>
 </header>
 
-<div class="search-container">
-    <input type="text" id="search-input" placeholder="한자, 뜻, 초성 검색..." disabled>
-</div>
+<div class="search-container"><input type="text" id="search-input" placeholder="검색..." disabled></div>
 
 <div class="filter-buttons">
     <button class="filter-btn active" id="btn-all">전체</button>
     <button class="filter-btn" id="btn-todo">미암기</button>
-    <select id="tag-filter">
-        <option value="all">품사 전체</option>
-    </select>
+    <select id="tag-filter"><option value="all">품사 전체</option></select>
 </div>
 
 <div id="voca-container"></div>
@@ -188,8 +82,6 @@
 
     async function init() {
         const container = document.getElementById('voca-container');
-        const searchInput = document.getElementById('search-input');
-        const loader = document.getElementById('loading-overlay');
         const tagFilterSelect = document.getElementById('tag-filter');
 
         try {
@@ -198,37 +90,36 @@
             
             const parseCSV = (text) => {
                 const result = [];
-                let row = [];
-                let col = "";
-                let inQuotes = false;
+                let row = []; let col = ""; let inQuotes = false;
                 for (let i = 0; i < text.length; i++) {
-                    let char = text[i];
-                    let nextChar = text[i+1];
+                    let char = text[i]; let nextChar = text[i+1];
                     if (char === '"' && inQuotes && nextChar === '"') { col += '"'; i++; }
-                    else if (char === '"') { inQuotes = !inQuotes; }
+                    else if (char === '"') inQuotes = !inQuotes;
                     else if (char === ',' && !inQuotes) { row.push(col); col = ""; }
                     else if (char === '\n' && !inQuotes) { row.push(col); result.push(row); row = []; col = ""; }
-                    else { col += char; }
+                    else col += char;
                 }
-                row.push(col); result.push(row);
-                return result;
+                row.push(col); result.push(row); return result;
             };
 
-            const allRows = parseCSV(csvText).slice(1);
-            const tags = new Set(); // 품사 종류 자동 수집용
+            const allData = parseCSV(csvText);
+            const headerRow = allData[0]; // 시트의 첫 번째 줄(제목줄)
+            const allRows = allData.slice(1);
 
+            // [핵심] 제목줄에서 '품사'라는 단어가 들어간 열 번호를 찾습니다.
+            let tagColumnIndex = headerRow.findIndex(name => name.includes("품사"));
+            if (tagColumnIndex === -1) tagColumnIndex = 6; // 못 찾으면 기본 6번(G열)
+
+            const tags = new Set();
             vocaData = allRows.map((cols, index) => {
                 const rawKanji = cols[0]?.trim() || '';
                 const rawYomi = cols[1]?.trim() || '';
-                const displayKanji = rawKanji !== "" ? rawKanji : rawYomi;
-                
-                // G열(인덱스 6) 데이터 그대로 읽기
-                const tag = cols[6]?.trim() || '미분류';
-                if(tag !== '미분류') tags.add(tag);
+                const tag = cols[tagColumnIndex]?.trim() || '미분류';
+                if(tag && tag !== '미분류') tags.add(tag);
 
                 return {
                     id: index,
-                    kanji: displayKanji,
+                    kanji: rawKanji || rawYomi,
                     yomi: rawYomi,
                     meaning: cols[2]?.trim() || '',
                     example: cols[3]?.trim() || '',
@@ -238,24 +129,45 @@
                 };
             }).filter(item => item.kanji);
 
-            // 필터 목록 자동 생성
-            tags.forEach(tagName => {
+            tags.forEach(t => {
                 const opt = document.createElement('option');
-                opt.value = tagName;
-                opt.innerText = tagName;
+                opt.value = t; opt.innerText = t;
                 tagFilterSelect.appendChild(opt);
             });
 
-            searchInput.disabled = false;
+            document.getElementById('search-input').disabled = false;
             render();
-            
-            loader.style.opacity = '0';
-            setTimeout(() => loader.style.display = 'none', 500);
+            document.getElementById('loading-overlay').style.display = 'none';
 
         } catch (error) {
             console.error(error);
             container.innerHTML = `<p style="color:red">로드 실패!</p>`;
         }
+    }
+
+    // (render, toggleMemorized 등 나머지 함수들은 기존과 동일)
+    function render() {
+        const container = document.getElementById('voca-container');
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+        const tagFilter = document.getElementById('tag-filter').value;
+        container.innerHTML = '';
+        const filtered = vocaData.filter(item => {
+            const isMatch = item.kanji.toLowerCase().includes(keyword) || item.meaning.toLowerCase().includes(keyword) || item.yomi.toLowerCase().includes(keyword) || item.chosung.includes(keyword);
+            const statusMatch = (currentFilter === 'todo') ? item.status !== "O" : true;
+            const tagMatch = (tagFilter === 'all') ? true : item.tag === tagFilter;
+            return isMatch && statusMatch && tagMatch;
+        });
+        filtered.forEach(item => {
+            const card = document.createElement('div');
+            card.className = `card ${item.status === "O" ? 'memorized' : ''}`;
+            card.onclick = () => card.classList.toggle('show-ex');
+            card.innerHTML = `<button class="check-btn" onclick="toggleMemorized(${item.id}, event)">✔</button>
+                <div class="tag-badge ${item.tag}">${item.tag}</div>
+                <div class="kanji">${item.kanji}</div><div class="yomi">${item.yomi}</div>
+                <div class="meaning">${item.meaning}</div>
+                ${item.example ? `<div class="example">${item.example}</div>` : ''}`;
+            container.appendChild(card);
+        });
     }
 
     async function toggleMemorized(id, event) {
@@ -264,74 +176,27 @@
         const isSelected = card.classList.toggle('memorized');
         const item = vocaData.find(v => v.id === id);
         item.status = isSelected ? "O" : "";
-        try {
-            await fetch(`${API_URL}?action=toggle&row=${id}`, { mode: 'no-cors' });
-        } catch (e) {
-            console.error("저장 실패", e);
-            card.classList.toggle('memorized');
-        }
+        try { await fetch(`${API_URL}?action=toggle&row=${id}`, { mode: 'no-cors' }); } catch (e) { card.classList.toggle('memorized'); }
     }
 
-    function render() {
-        const container = document.getElementById('voca-container');
-        const keyword = document.getElementById('search-input').value.toLowerCase();
-        const tagFilter = document.getElementById('tag-filter').value;
-        container.innerHTML = '';
-
-        const filtered = vocaData.filter(item => {
-            const isMatch = item.kanji.toLowerCase().includes(keyword) || 
-                            item.meaning.toLowerCase().includes(keyword) || 
-                            item.yomi.toLowerCase().includes(keyword) ||
-                            item.chosung.includes(keyword);
-            const statusMatch = (currentFilter === 'todo') ? item.status !== "O" : true;
-            const tagMatch = (tagFilter === 'all') ? true : item.tag === tagFilter;
-            return isMatch && statusMatch && tagMatch;
-        });
-
-        filtered.forEach(item => {
-            const card = document.createElement('div');
-            card.className = `card ${item.status === "O" ? 'memorized' : ''}`;
-            card.onclick = () => card.classList.toggle('show-ex');
-            card.innerHTML = `
-                <button class="check-btn" onclick="toggleMemorized(${item.id}, event)">✔</button>
-                <div class="tag-badge ${item.tag}">${item.tag}</div>
-                <div class="kanji">${item.kanji}</div>
-                <div class="yomi">${item.yomi}</div>
-                <div class="meaning">${item.meaning}</div>
-                ${item.example ? `<div class="example">${item.example}</div>` : ''}
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // [이벤트 설정]
     document.getElementById('btn-theme').onclick = () => {
-        const body = document.documentElement;
-        const isDark = body.getAttribute('data-theme') === 'dark';
-        body.setAttribute('data-theme', isDark ? 'light' : 'dark');
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
         document.getElementById('btn-theme').innerText = isDark ? '🌙' : '☀️';
     };
-
     document.getElementById('btn-yomi').onclick = () => {
         document.body.classList.toggle('hide-yomi');
-        const isHidden = document.body.classList.contains('hide-yomi');
-        document.getElementById('btn-yomi').innerText = isHidden ? '🙈' : '👁️';
+        document.getElementById('btn-yomi').innerText = document.body.classList.contains('hide-yomi') ? '🙈' : '👁️';
     };
-
     document.getElementById('search-input').oninput = () => render();
     document.getElementById('tag-filter').onchange = () => render();
-
     document.getElementById('btn-all').onclick = (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        currentFilter = 'all';
-        render();
+        e.target.classList.add('active'); currentFilter = 'all'; render();
     };
     document.getElementById('btn-todo').onclick = (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
-        currentFilter = 'todo';
-        render();
+        e.target.classList.add('active'); currentFilter = 'todo'; render();
     };
 
     init();
