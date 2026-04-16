@@ -47,7 +47,6 @@
         header { margin-bottom: 15px; text-align: center; position: relative; width: 100%; max-width: 400px; }
         h1 { font-size: 1.2rem; letter-spacing: 3px; color: var(--text-main); border-bottom: 2px solid var(--accent); display: inline-block; }
 
-        /* [상단 컨트롤 바] */
         .top-controls {
             display: flex; gap: 10px; position: absolute; right: 0; top: 0;
         }
@@ -64,12 +63,18 @@
             box-shadow: 0 4px 6px var(--card-shadow);
         }
 
-        .filter-buttons { margin-bottom: 20px; display: flex; gap: 10px; }
+        .filter-buttons { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
         .filter-btn {
-            padding: 6px 18px; border: 1px solid var(--dot-color); background: var(--card-bg); cursor: pointer;
+            padding: 6px 15px; border: 1px solid var(--dot-color); background: var(--card-bg); cursor: pointer;
             border-radius: 20px; font-size: 0.8rem; transition: 0.2s; color: var(--text-main);
         }
         .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        
+        /* 품사 선택 드롭다운 스타일 */
+        #tag-filter {
+            border: 1px solid var(--dot-color); background: var(--card-bg); color: var(--text-main);
+            padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; outline: none;
+        }
 
         /* [카드 그리드] */
         #voca-container {
@@ -77,11 +82,11 @@
             display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px;
         }
 
-        /* [카드 디자인] */
+        /* [카드 디자인 및 품사 배지] */
         .card {
             background: var(--card-bg); padding: 15px; position: relative; border: 1px solid var(--paper-line);
             box-shadow: 4px 4px 0px var(--card-shadow); transition: transform 0.2s ease, opacity 0.2s; cursor: pointer;
-            min-height: 100px; display: flex; flex-direction: column; justify-content: center;
+            min-height: 120px; display: flex; flex-direction: column; justify-content: center;
         }
         .card:hover { transform: translateY(-3px); }
         .card::before {
@@ -90,13 +95,21 @@
         }
         .card.memorized { opacity: 0.4; }
 
-        .kanji { font-size: 1.3rem; font-weight: 500; color: var(--text-main); padding-left: 10px; margin-bottom: 3px; }
-        
-        /* [5. 후리가나 가리기 기능 관련 CSS] */
-        .yomi { 
-            font-size: 0.8rem; color: var(--text-sub); padding-left: 10px; margin-bottom: 8px; 
-            transition: opacity 0.2s;
+        /* 품사 배지 스타일 */
+        .tag-badge {
+            font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; color: #fff;
+            position: absolute; top: 10px; left: 15px; font-weight: bold;
+            background: #95a5a6; /* 기본색: 기타 */
         }
+        .tag-badge.명사 { background: #3498db; }
+        .tag-badge.い형용사 { background: #e74c3c; }
+        .tag-badge.な형용사 { background: #2ecc71; }
+        .tag-badge.1동사 { background: #f39c12; }
+        .tag-badge.2동사 { background: #e67e22; }
+        .tag-badge.3동사 { background: #d35400; }
+
+        .kanji { font-size: 1.3rem; font-weight: 500; color: var(--text-main); padding-left: 10px; margin-top: 15px; margin-bottom: 3px; }
+        .yomi { font-size: 0.8rem; color: var(--text-sub); padding-left: 10px; margin-bottom: 8px; transition: opacity 0.2s; }
         body.hide-yomi .yomi { opacity: 0; }
 
         .meaning { font-size: 0.95rem; color: var(--text-main); padding-left: 10px; border-top: 1px dashed var(--paper-line); padding-top: 8px; }
@@ -114,7 +127,7 @@
         }
         .card.memorized .check-btn { color: var(--accent); }
 
-        /* [4. 로딩 상태 개선 스타일] */
+        /* 로딩 오버레이 */
         #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: var(--bg-color); display: flex; flex-direction: column;
@@ -156,6 +169,16 @@
 <div class="filter-buttons">
     <button class="filter-btn active" id="btn-all">전체</button>
     <button class="filter-btn" id="btn-todo">미암기</button>
+    <select id="tag-filter">
+        <option value="all">품사 전체</option>
+        <option value="명사">명사</option>
+        <option value="い형용사">い형용사</option>
+        <option value="な형용사">나형용사</option>
+        <option value="1동사">1동사</option>
+        <option value="2동사">2동사</option>
+        <option value="3동사">3동사</option>
+        <option value="기타">기타</option>
+    </select>
 </div>
 
 <div id="voca-container"></div>
@@ -206,28 +229,28 @@
             };
 
             const allRows = parseCSV(csvText).slice(1);
-           vocaData = allRows.map((cols, index) => {
-    const rawKanji = cols[0]?.trim() || '';
-    const rawYomi = cols[1]?.trim() || '';
-    
-    // [핵심] A열(한자)이 비어있으면 B열(발음)을 대신 한자 칸에 넣습니다.
-    const displayKanji = rawKanji !== "" ? rawKanji : rawYomi;
+            vocaData = allRows.map((cols, index) => {
+                const rawKanji = cols[0]?.trim() || '';
+                const rawYomi = cols[1]?.trim() || '';
+                const displayKanji = rawKanji !== "" ? rawKanji : rawYomi;
+                // G열(index 6)에서 태그를 가져옵니다. 비어있으면 '기타'로 취급합니다.
+                const tag = cols[6]?.trim() || '기타';
 
-    return {
-        id: index,
-        kanji: displayKanji,
-        yomi: rawYomi,
-        meaning: cols[2]?.trim() || '',
-        example: cols[3]?.trim() || '',
-        status: cols[4]?.trim() || '',
-        chosung: getChosung(cols[2] || '')
-    };
-}).filter(item => item.kanji); // 이제 B열이라도 값이 있으면 filter에서 걸러지지 않습니다.
+                return {
+                    id: index,
+                    kanji: displayKanji,
+                    yomi: rawYomi,
+                    meaning: cols[2]?.trim() || '',
+                    example: cols[3]?.trim() || '',
+                    status: cols[4]?.trim() || '',
+                    tag: tag,
+                    chosung: getChosung(cols[2] || '')
+                };
+            }).filter(item => item.kanji);
 
             searchInput.disabled = false;
             render();
             
-            // 로딩 화면 부드럽게 제거
             loader.style.opacity = '0';
             setTimeout(() => loader.style.display = 'none', 500);
 
@@ -254,15 +277,23 @@
     function render() {
         const container = document.getElementById('voca-container');
         const keyword = document.getElementById('search-input').value.toLowerCase();
+        const tagFilter = document.getElementById('tag-filter').value;
         container.innerHTML = '';
 
         const filtered = vocaData.filter(item => {
+            // 1. 검색어 필터링
             const isMatch = item.kanji.toLowerCase().includes(keyword) || 
                             item.meaning.toLowerCase().includes(keyword) || 
                             item.yomi.toLowerCase().includes(keyword) ||
                             item.chosung.includes(keyword);
-            if (currentFilter === 'todo') return isMatch && item.status !== "O";
-            return isMatch;
+            
+            // 2. 미암기 필터링
+            const statusMatch = (currentFilter === 'todo') ? item.status !== "O" : true;
+            
+            // 3. 품사 태그 필터링
+            const tagMatch = (tagFilter === 'all') ? true : item.tag === tagFilter;
+
+            return isMatch && statusMatch && tagMatch;
         });
 
         filtered.forEach(item => {
@@ -271,6 +302,7 @@
             card.onclick = () => card.classList.toggle('show-ex');
             card.innerHTML = `
                 <button class="check-btn" onclick="toggleMemorized(${item.id}, event)">✔</button>
+                <div class="tag-badge ${item.tag}">${item.tag}</div>
                 <div class="kanji">${item.kanji}</div>
                 <div class="yomi">${item.yomi}</div>
                 <div class="meaning">${item.meaning}</div>
@@ -280,7 +312,7 @@
         });
     }
 
-    // [기능: 다크모드 토글]
+    // [이벤트 리스너들]
     document.getElementById('btn-theme').onclick = () => {
         const body = document.documentElement;
         const isDark = body.getAttribute('data-theme') === 'dark';
@@ -288,7 +320,6 @@
         document.getElementById('btn-theme').innerText = isDark ? '🌙' : '☀️';
     };
 
-    // [기능: 가나 숨기기 토글]
     document.getElementById('btn-yomi').onclick = () => {
         document.body.classList.toggle('hide-yomi');
         const isHidden = document.body.classList.contains('hide-yomi');
@@ -296,12 +327,16 @@
     };
 
     document.getElementById('search-input').oninput = () => render();
+    
+    document.getElementById('tag-filter').onchange = () => render(); // 품사 변경 시 다시 그리기
+
     document.getElementById('btn-all').onclick = (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
         currentFilter = 'all';
         render();
     };
+    
     document.getElementById('btn-todo').onclick = (e) => {
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         e.target.classList.add('active');
